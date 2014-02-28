@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.google.dogecoin.store;
+package com.google.monacoin.store;
 
-import com.google.dogecoin.core.*;
-import com.google.dogecoin.script.Script;
+import com.google.monacoin.core.*;
+import com.google.monacoin.script.Script;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

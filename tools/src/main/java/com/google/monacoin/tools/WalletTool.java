@@ -475,7 +475,7 @@ public class WalletTool {
     }
 
     private static void sendPaymentRequest(String location, boolean verifyPki) {
-        if (location.startsWith("http") || location.startsWith("dogecoin")) {
+        if (location.startsWith("http") || location.startsWith("monacoin")) {
             try {
                 ListenableFuture<PaymentSession> future;
                 if (location.startsWith("http")) {
@@ -495,7 +495,7 @@ public class WalletTool {
                 System.err.println("Error creating payment session " + e.getMessage());
                 System.exit(1);
             } catch (BitcoinURIParseException e) {
-                System.err.println("Invalid dogecoin uri: " + e.getMessage());
+                System.err.println("Invalid monacoin uri: " + e.getMessage());
                 System.exit(1);
             } catch (InterruptedException e) {
                 // Ignore.
@@ -532,7 +532,7 @@ public class WalletTool {
     private static void send(PaymentSession session) {
         try {
             System.out.println("Payment Request");
-            System.out.println("Amount: " + session.getValue().doubleValue() / 100000 + "mDOGE");
+            System.out.println("Amount: " + session.getValue().doubleValue() / 100000 + "mMONA");
             System.out.println("Date: " + session.getDate());
             System.out.println("Memo: " + session.getMemo());
             if (session.pkiVerificationData != null) {

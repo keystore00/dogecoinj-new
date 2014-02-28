@@ -17,11 +17,11 @@
 
 package com.google.bitcoin.protocols.payments;
 
-import com.google.dogecoin.core.*;
-import com.google.dogecoin.params.TestNet3Params;
+import com.google.monacoin.core.*;
+import com.google.monacoin.params.TestNet3Params;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.dogecoin.protocols.payments.PaymentRequestException;
-import com.google.dogecoin.protocols.payments.PaymentSession;
+import com.google.monacoin.protocols.payments.PaymentRequestException;
+import com.google.monacoin.protocols.payments.PaymentSession;
 import com.google.protobuf.ByteString;
 import org.bitcoin.protocols.payments.Protos;
 import org.junit.Before;

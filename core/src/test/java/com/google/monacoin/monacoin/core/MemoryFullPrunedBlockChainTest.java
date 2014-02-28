@@ -1,8 +1,8 @@
-package com.google.dogecoin.core;
+package com.google.monacoin.core;
 
-import com.google.dogecoin.store.BlockStoreException;
-import com.google.dogecoin.store.FullPrunedBlockStore;
-import com.google.dogecoin.store.MemoryFullPrunedBlockStore;
+import com.google.monacoin.store.BlockStoreException;
+import com.google.monacoin.store.FullPrunedBlockStore;
+import com.google.monacoin.store.MemoryFullPrunedBlockStore;
 
 /**
  * A MemoryStore implementation of the FullPrunedBlockStoreTest

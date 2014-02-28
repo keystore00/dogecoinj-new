@@ -16,10 +16,10 @@
 
 package com.google.bitcoin.tools;
 
-import com.google.dogecoin.protocols.payments.PaymentRequestException;
-import com.google.dogecoin.protocols.payments.PaymentSession;
-import com.google.dogecoin.uri.BitcoinURI;
-import com.google.dogecoin.uri.BitcoinURIParseException;
+import com.google.monacoin.protocols.payments.PaymentRequestException;
+import com.google.monacoin.protocols.payments.PaymentSession;
+import com.google.monacoin.uri.BitcoinURI;
+import com.google.monacoin.uri.BitcoinURIParseException;
 
 import java.net.URI;
 import java.net.URISyntaxException;

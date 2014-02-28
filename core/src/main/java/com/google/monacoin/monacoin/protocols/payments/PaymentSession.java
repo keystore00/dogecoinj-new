@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.google.dogecoin.protocols.payments;
+package com.google.monacoin.protocols.payments;
 
-import com.google.dogecoin.core.*;
-import com.google.dogecoin.params.MainNetParams;
-import com.google.dogecoin.script.ScriptBuilder;
-import com.google.dogecoin.uri.BitcoinURI;
-import com.google.dogecoin.utils.Threading;
+import com.google.monacoin.core.*;
+import com.google.monacoin.params.MainNetParams;
+import com.google.monacoin.script.ScriptBuilder;
+import com.google.monacoin.uri.BitcoinURI;
+import com.google.monacoin.utils.Threading;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
