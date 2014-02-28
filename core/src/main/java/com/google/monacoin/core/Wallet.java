@@ -1868,15 +1868,13 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
 
             // We need to know if we need to add an additional fee because one of our values are smaller than 1 MONA
             boolean needAtLeastReferenceFee = false;
-            int txOutDustFeeCount = 0;
             if (req.ensureMinRequiredFee && !req.emptyWallet) { // min fee checking is handled later for emptyWallet
                 for (TransactionOutput output : req.tx.getOutputs())
-                    if (output.getValue().compareTo(Utils.COIN) < 0) { //TXOut lower than 1 MONA have a 2 MONA fee!
-                        //TODO Currently Monacoin doesn't have this. We can put it back in later.
-//                        if (output.getValue().compareTo(output.getMinNonDustValue()) < 0)
-//                            throw new IllegalArgumentException("Tried to send dust with ensureMinRequiredFee set - no way to complete this");
+                    if (output.getValue().compareTo(Utils.CENT) < 0) {
+                        if (output.getValue().compareTo(output.getMinNonDustValue()) < 0)
+                            throw new IllegalArgumentException("Tried to send dust with ensureMinRequiredFee set - no way to complete this");
                         needAtLeastReferenceFee = true;
-                        txOutDustFeeCount++; //MONA: Each TXOut < 1 MONA needs +1 MONA fee!
+			break;
                     }
             }
 
@@ -1894,7 +1892,7 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
             if (!req.emptyWallet) {
                 // This can throw InsufficientMoneyException.
                 FeeCalculation feeCalculation;
-                feeCalculation = new FeeCalculation(req, value, originalInputs, needAtLeastReferenceFee, candidates, txOutDustFeeCount);
+                feeCalculation = new FeeCalculation(req, value, originalInputs, needAtLeastReferenceFee, candidates);
                 bestCoinSelection = feeCalculation.bestCoinSelection;
                 bestChangeOutput = feeCalculation.bestChangeOutput;
             } else {
@@ -1975,7 +1973,7 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
         BigInteger fee = baseFee.add(BigInteger.valueOf((size / 1000) + 1).multiply(feePerKb));
         output.setValue(output.getValue().subtract(fee));
         // Check if we need additional fee due to the output's value
-        if (output.getValue().compareTo(Utils.COIN) < 0 && fee.compareTo(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE) < 0)
+        if (output.getValue().compareTo(Utils.CENT) < 0 && fee.compareTo(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE) < 0)
             output.setValue(output.getValue().subtract(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE.subtract(fee)));
         return output.getMinNonDustValue().compareTo(output.getValue()) <= 0;
     }
@@ -3418,8 +3416,7 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
         private TransactionOutput bestChangeOutput;
 
         public FeeCalculation(SendRequest req, BigInteger value, List<TransactionInput> originalInputs,
-                              boolean needAtLeastReferenceFee, LinkedList<TransactionOutput> candidates,
-                              int txOutDustFeeCount  ) throws InsufficientMoneyException {
+                              boolean needAtLeastReferenceFee, LinkedList<TransactionOutput> candidates) throws InsufficientMoneyException {
             checkState(lock.isHeldByCurrentThread());
             // There are 3 possibilities for what adding change might do:
             // 1) No effect
@@ -3451,10 +3448,6 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
                 if (needAtLeastReferenceFee && fees.compareTo(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE) < 0)
                     fees = Transaction.REFERENCE_DEFAULT_MIN_TX_FEE;
 
-                //MONA: Add 1 MONA fee per txOut < 1 MONA
-                if (txOutDustFeeCount > 0)
-                    fees = fees.add(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE.multiply(BigInteger.valueOf(txOutDustFeeCount)));
-
                 valueNeeded = value.add(fees);
                 if (additionalValueForNextCategory != null)
                     valueNeeded = valueNeeded.add(additionalValueForNextCategory);
@@ -3483,11 +3476,11 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
                 if (additionalValueSelected != null)
                     change = change.add(additionalValueSelected);
 
-                // If change is < 1 DOGE, we will need to have at least minfee to be accepted by the network
-                if (req.ensureMinRequiredFee && !change.equals(BigInteger.ZERO) && change.compareTo(Utils.COIN) < 0) {
+                // If change is < 0.01 MONA, we will need to have at least minfee to be accepted by the network
+                if (req.ensureMinRequiredFee && !change.equals(BigInteger.ZERO) && change.compareTo(Utils.CENT) < 0 && fees.compareTo(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE) < 0) {
                     // This solution may fit into category 2, but it may also be category 3, we'll check that later
                     eitherCategory2Or3 = true;
-                    additionalValueForNextCategory = Utils.COIN;
+                    additionalValueForNextCategory = Utils.CENT;
                     // If the change is smaller than the fee we want to add, this will be negative
                     change = change.subtract(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE.subtract(fees));
                 }
@@ -3551,7 +3544,7 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
                     // If we are in selection2, we will require at least CENT additional. If we do that, there is no way
                     // we can end up back here because CENT additional will always get us to 1
                     checkState(selection2 == null);
-                    checkState(additionalValueForNextCategory.equals(Utils.COIN));
+                    checkState(additionalValueForNextCategory.equals(Utils.CENT));
                     selection2 = selection;
                     selection2Change = checkNotNull(changeOutput); // If we get no change in category 2, we are actually in category 3
                 } else {
