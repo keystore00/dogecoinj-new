@@ -17,6 +17,7 @@
 package com.google.monacoin.wallet;
 
 import com.google.monacoin.core.*;
+import com.google.monacoin.params.RegTestParams;
 import com.google.monacoin.params.UnitTestParams;
 import com.google.monacoin.utils.TestUtils;
 import com.google.monacoin.utils.TestWithWallet;
@@ -60,6 +61,10 @@ public class DefaultCoinSelectorTest extends TestWithWallet {
         assertTrue(DefaultCoinSelector.isSelectable(t));
         t = new Transaction(params);
         t.getConfidence().setConfidenceType(TransactionConfidence.ConfidenceType.BUILDING);
+        assertTrue(DefaultCoinSelector.isSelectable(t));
+        t = new Transaction(RegTestParams.get());
+        t.getConfidence().setConfidenceType(TransactionConfidence.ConfidenceType.PENDING);
+        t.getConfidence().setSource(TransactionConfidence.Source.SELF);
         assertTrue(DefaultCoinSelector.isSelectable(t));
     }
 

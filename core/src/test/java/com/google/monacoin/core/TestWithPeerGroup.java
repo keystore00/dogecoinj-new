@@ -19,6 +19,7 @@ package com.google.monacoin.core;
 import com.google.monacoin.params.UnitTestParams;
 import com.google.monacoin.net.BlockingClientManager;
 import com.google.monacoin.net.NioClientManager;
+import com.google.monacoin.params.UnitTestParams;
 import com.google.monacoin.store.BlockStore;
 import com.google.monacoin.utils.ExponentialBackoff;
 import com.google.common.base.Preconditions;
@@ -50,7 +51,7 @@ public class TestWithPeerGroup extends TestWithNetworkConnections {
 
         remoteVersionMessage = new VersionMessage(unitTestParams, 1);
         remoteVersionMessage.localServices = VersionMessage.NODE_NETWORK;
-        remoteVersionMessage.clientVersion = FilteredBlock.MIN_PROTOCOL_VERSION;
+        remoteVersionMessage.clientVersion = NotFoundMessage.MIN_PROTOCOL_VERSION;
         initPeerGroup();
     }
 

@@ -52,7 +52,7 @@ public class TransactionOutput extends ChildMessage implements Serializable {
     // was owned by us and was sent to somebody else. If false and spentBy is set it means this output was owned by
     // us and used in one of our own transactions (eg, because it is a change output).
     private boolean availableForSpending;
-    private TransactionInput spentBy;
+    @Nullable private TransactionInput spentBy;
 
     // A reference to the transaction which holds this output.
     Transaction parentTransaction;
@@ -109,7 +109,7 @@ public class TransactionOutput extends ChildMessage implements Serializable {
         super(params);
         // Negative values obviously make no sense, except for -1 which is used as a sentinel value when calculating
         // SIGHASH_SINGLE signatures, so unfortunately we have to allow that here.
-        checkArgument(value.compareTo(BigInteger.ZERO) >= 0 || value.equals(Utils.NEGATIVE_ONE), "Negative values not allowed");
+        checkArgument(value.signum() >= 0 || value.equals(Utils.NEGATIVE_ONE), "Negative values not allowed");
         checkArgument(value.compareTo(NetworkParameters.MAX_MONEY) < 0, "Values larger than MAX_MONEY not allowed");
         this.value = value;
         this.scriptBytes = scriptBytes;
@@ -202,9 +202,12 @@ public class TransactionOutput extends ChildMessage implements Serializable {
         // formula is wrong for anything that's not a pay-to-address output, unfortunately, we must follow the reference
         // clients wrongness in order to ensure we're considered standard. A better formula would either estimate the
         // size of data needed to satisfy all different script types, or just hard code 33 below.
-        final BigInteger size = BigInteger.valueOf(this.bitcoinSerialize().length + 148);
+
+        // DOGE doesn't enforce these rules. Therefore we consider each output as valid.
+        return BigInteger.ZERO;
+        /**final BigInteger size = BigInteger.valueOf(this.bitcoinSerialize().length + 148);
         BigInteger[] nonDustAndRemainder = feePerKbRequired.multiply(size).divideAndRemainder(BigInteger.valueOf(1000));
-        return nonDustAndRemainder[1].equals(BigInteger.ZERO) ? nonDustAndRemainder[0] : nonDustAndRemainder[0].add(BigInteger.ONE);
+        return nonDustAndRemainder[1].equals(BigInteger.ZERO) ? nonDustAndRemainder[0] : nonDustAndRemainder[0].add(BigInteger.ONE);**/
     }
 
     /**
@@ -311,6 +314,7 @@ public class TransactionOutput extends ChildMessage implements Serializable {
     /**
      * Returns the connected input.
      */
+    @Nullable
     public TransactionInput getSpentBy() {
         return spentBy;
     }
