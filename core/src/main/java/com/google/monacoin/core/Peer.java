@@ -119,7 +119,7 @@ public class Peer extends PeerSocketHandler {
     // The lowest version number we're willing to accept. Lower than this will result in an immediate disconnect.
     private volatile int vMinProtocolVersion = Pong.MIN_PROTOCOL_VERSION;
     // A string to be checked inside the subversion to distinguis true 70001 nodes from 1.4.2 nodes.
-    private String ACCEPTED_SUBVERSION = "Shibetoshi";
+    private String ACCEPTED_SUBVERSION = "Satoshi";
     // When an API user explicitly requests a block or transaction from a peer, the InventoryItem is put here
     // whilst waiting for the response. Is not used for downloads Peer generates itself.
     private static class GetDataRequest {
@@ -147,7 +147,7 @@ public class Peer extends PeerSocketHandler {
     // A minimum needed block height to allow the implementation to connect to a peer.
     // This prevents us from running onto the wrong side of the Feb '14 fork.
     // It happened around block 104700 or so. Give it a bit more room.
-    private final long MIN_PEER_BLOCK_HEIGHT = 105000;
+    private final long MIN_PEER_BLOCK_HEIGHT = 50000;
 
     /**
      * <p>Construct a peer that reads/writes from the given block chain.</p>
