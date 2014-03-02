@@ -1903,8 +1903,6 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
                 bestCoinSelection = selector.select(NetworkParameters.MAX_MONEY, candidates);
                 req.tx.getOutput(0).setValue(bestCoinSelection.valueGathered);
                 totalOutput = bestCoinSelection.valueGathered;
-                if (totalOutput.compareTo(BigInteger.valueOf(2)) < 0)
-                    throw new InsufficientMoneyException(totalOutput.subtract(BigInteger.valueOf(2)), "Can't spend this due to fee.");
             }
 
             for (TransactionOutput output : bestCoinSelection.gathered)
@@ -1916,13 +1914,6 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
                 Transaction tx = req.tx;
                 if (!adjustOutputDownwardsForFee(tx, bestCoinSelection, baseFee, feePerKb))
                     throw new InsufficientMoneyException.CouldNotAdjustDownwards();
-
-                //Set total output again after we reduced it by the fee. There are 3 cases here at emptying:
-                //1: Balance is >= 2: The fee will be 1 (or more if the size of the tx is bigger.
-                //2: Balance is >= 1 but < 2: The fee will be 1, but the output will be below 1 so additional fee is needed, which we don't have.
-                //3: Balance is > 0 but < 1: We can never spend this due to fee.
-                //4: Balance is 0: This won't happen here.
-                totalOutput = tx.getOutput(0).getValue();
             }
 
             totalInput = totalInput.add(bestCoinSelection.valueGathered);
@@ -3420,7 +3411,7 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
             checkState(lock.isHeldByCurrentThread());
             // There are 3 possibilities for what adding change might do:
             // 1) No effect
-            // 2) Causes increase in fee (change < 1 COIN)
+            // 2) Causes increase in fee (change < 0.01 COINS)
             // 3) Causes the transaction to have a dust output or change < fee increase (ie change will be thrown away)
             // If we get either of the last 2, we keep note of what the inputs looked like at the time and try to
             // add inputs as we go up the list (keeping track of minimum inputs for each category).  At the end, we pick
@@ -3498,18 +3489,14 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
                     // If the change output would result in this transaction being rejected as dust, just drop the change and make it a fee
                     if (req.ensureMinRequiredFee && Transaction.MIN_NONDUST_OUTPUT.compareTo(change) > 0) {
                         // This solution definitely fits in category 3
-                        //Throw away change lower than 1 DOGE as this is cheaper than paying the 1 DOGE fee.
                         isCategory3 = true;
                         additionalValueForNextCategory = Transaction.REFERENCE_DEFAULT_MIN_TX_FEE.add(
                                                          Transaction.MIN_NONDUST_OUTPUT.add(BigInteger.ONE));
-                        //additionalValueForNextCategory = Transaction.REFERENCE_DEFAULT_MIN_TX_FEE.add(BigInteger.ONE);
-                                                         //MONA: We don't have a min value, but we add more fees for tx < 1
                     } else {
                         size += changeOutput.bitcoinSerialize().length + VarInt.sizeOf(req.tx.getOutputs().size()) - VarInt.sizeOf(req.tx.getOutputs().size() - 1);
                         // This solution is either category 1 or 2
-                        if (!eitherCategory2Or3) {// must be category 1
+                        if (!eitherCategory2Or3) // must be category 1
                             additionalValueForNextCategory = null;
-			}
                     }
                 } else {
                     if (eitherCategory2Or3) {
@@ -3556,9 +3543,8 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
                 }
 
                 if (additionalValueForNextCategory != null) {
-                    if (additionalValueSelected != null) {
+                    if (additionalValueSelected != null)
                         checkState(additionalValueForNextCategory.compareTo(additionalValueSelected) > 0);
-		    }
                     continue;
                 }
                 break;
