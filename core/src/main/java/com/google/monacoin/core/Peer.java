@@ -147,7 +147,7 @@ public class Peer extends PeerSocketHandler {
     // A minimum needed block height to allow the implementation to connect to a peer.
     // This prevents us from running onto the wrong side of the Feb '14 fork.
     // It happened around block 104700 or so. Give it a bit more room.
-    private final long MIN_PEER_BLOCK_HEIGHT = 50000;
+    private final long MIN_PEER_BLOCK_HEIGHT = 0;
 
     /**
      * <p>Construct a peer that reads/writes from the given block chain.</p>
