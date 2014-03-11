@@ -933,7 +933,7 @@ public abstract class AbstractBlockChain {
         long endLoop = 0;
 
         if (BlockLastSolved == null || BlockLastSolved.getHeight() == 0 || (long)BlockLastSolved.getHeight() < PastBlocksMin)
-        { verifyDifficulty(params.getProofOfWorkLimit(), nextBlock); }
+	    { verifyDifficulty(params.getProofOfWorkLimit(), nextBlock); return; }
 
         int i = 0;
         //log.info("KGW: i = {}; height = {}; hash {} ", i, BlockReading.getHeight(), BlockReading.getHeader().getHashAsString());
