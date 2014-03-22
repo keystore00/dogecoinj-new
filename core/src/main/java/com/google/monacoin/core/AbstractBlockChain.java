@@ -137,6 +137,7 @@ public abstract class AbstractBlockChain {
     private double previousFalsePositiveRate;
 
     public static final long SwitchKGWBlock = 80000;
+    public static final long KGWCheckDiffInterval = 100;
 
     /**
      * Constructs a BlockChain connected to the given list of listeners (eg, wallets) and a store.
@@ -902,14 +903,19 @@ public abstract class AbstractBlockChain {
     }
 
     private void checkDifficultyTransitions_V2(StoredBlock storedPrev, Block nextBlock) throws BlockStoreException, VerificationException {
-        final long      	BlocksTargetSpacing			= NetworkParameters.TARGET_SPACING;  // 1.5 min
-        final int         		TimeDaySeconds				= 60 * 60 * 24;
-        final long				PastSecondsMin				= TimeDaySeconds / 4;
-        final long				PastSecondsMax				= TimeDaySeconds * 7;
-        final long				PastBlocksMin				= PastSecondsMin / BlocksTargetSpacing;
-        final long				PastBlocksMax				= PastSecondsMax / BlocksTargetSpacing;
+	if (storedPrev.getHeight() % KGWCheckDiffInterval != 0) {
+	    //skip
+	    return;
+	} else {
+	    final long      	BlocksTargetSpacing			= NetworkParameters.TARGET_SPACING;  // 1.5 min
+	    final int         		TimeDaySeconds				= 60 * 60 * 24;
+	    final long				PastSecondsMin				= TimeDaySeconds / 4;
+	    final long				PastSecondsMax				= TimeDaySeconds * 7;
+	    final long				PastBlocksMin				= PastSecondsMin / BlocksTargetSpacing;
+	    final long				PastBlocksMax				= PastSecondsMax / BlocksTargetSpacing;
 
-        KimotoGravityWell(storedPrev, nextBlock, BlocksTargetSpacing, PastBlocksMin, PastBlocksMax);
+	    KimotoGravityWell(storedPrev, nextBlock, BlocksTargetSpacing, PastBlocksMin, PastBlocksMax);
+	}
     }
 
     private void KimotoGravityWell(StoredBlock storedPrev, Block nextBlock, long TargetBlocksSpacingSeconds, long PastBlocksMin, long PastBlocksMax)  throws BlockStoreException, VerificationException {
