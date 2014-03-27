@@ -137,7 +137,7 @@ public abstract class AbstractBlockChain {
     private double previousFalsePositiveRate;
 
     public static final long SwitchKGWBlock = 80000;
-    public static final long KGWCheckDiffInterval = 100;
+    public static final long KGWCheckDiffInterval = NetworkParameters.INTERVAL;
 
     /**
      * Constructs a BlockChain connected to the given list of listeners (eg, wallets) and a store.
@@ -395,7 +395,7 @@ public abstract class AbstractBlockChain {
                 return false;
             } else {
                 // It connects to somewhere on the chain. Not necessarily the top of the best known chain.
-                checkDifficultyTransitions(storedPrev, block);
+                checkDifficultyTransitions(storedPrev, block, contentsImportant);
                 connectBlock(block, storedPrev, shouldVerifyTransactions(), filteredTxHashList, filteredTxn);
             }
 
@@ -880,7 +880,7 @@ public abstract class AbstractBlockChain {
                     receivedDifficulty.toString(16) + " vs " + newDifficulty.toString(16));
     }
 
-    private void checkDifficultyTransitions(StoredBlock storedPrev, Block nextBlock) throws BlockStoreException, VerificationException {
+    private void checkDifficultyTransitions(StoredBlock storedPrev, Block nextBlock, Boolean isImportantBlock) throws BlockStoreException, VerificationException {
 
         //long now = System.currentTimeMillis();
 
@@ -894,7 +894,7 @@ public abstract class AbstractBlockChain {
         }
 
         if (DiffMode == 1) { checkDifficultyTransitions_V1(storedPrev, nextBlock); }
-        else if	(DiffMode == 2) { checkDifficultyTransitions_V2(storedPrev, nextBlock); }
+        else if	(DiffMode == 2) { checkDifficultyTransitions_V2(storedPrev, nextBlock, isImportantBlock); }
 
         //checkDifficultyTransitions_V2(storedPrev, nextBlock);
 
@@ -902,8 +902,8 @@ public abstract class AbstractBlockChain {
         //log.info("Monacoin checkDifficultyTransitions({}) is {} seconds", storedPrev.getHeight(), elapsed/1000);
     }
 
-    private void checkDifficultyTransitions_V2(StoredBlock storedPrev, Block nextBlock) throws BlockStoreException, VerificationException {
-	if (storedPrev.getHeight() % KGWCheckDiffInterval != 0) {
+    private void checkDifficultyTransitions_V2(StoredBlock storedPrev, Block nextBlock, Boolean isImportantBlock) throws BlockStoreException, VerificationException {
+	if ( Math.random() > 1/(double)KGWCheckDiffInterval && !isImportantBlock) {
 	    //skip
 	    return;
 	} else {
@@ -914,6 +914,7 @@ public abstract class AbstractBlockChain {
 	    final long				PastBlocksMin				= PastSecondsMin / BlocksTargetSpacing;
 	    final long				PastBlocksMax				= PastSecondsMax / BlocksTargetSpacing;
 
+	    log.info("Calculate KGW diff at {}", storedPrev != null ? storedPrev.getHeight() : 0);
 	    KimotoGravityWell(storedPrev, nextBlock, BlocksTargetSpacing, PastBlocksMin, PastBlocksMax);
 	}
     }
