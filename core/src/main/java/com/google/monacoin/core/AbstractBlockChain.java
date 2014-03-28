@@ -915,11 +915,13 @@ public abstract class AbstractBlockChain {
 	    final long				PastBlocksMax				= PastSecondsMax / BlocksTargetSpacing;
 
 	    log.info("Calculate KGW diff at {}", storedPrev != null ? storedPrev.getHeight() : 0);
+	    long calcTime = System.currentTimeMillis();
 	    KimotoGravityWell(storedPrev, nextBlock, BlocksTargetSpacing, PastBlocksMin, PastBlocksMax);
+	    log.info("Calculation took {} sec.", System.currentTimeMillis() - calcTime);
 	}
     }
 
-    private void KimotoGravityWell(StoredBlock storedPrev, Block nextBlock, long TargetBlocksSpacingSeconds, long PastBlocksMin, long PastBlocksMax)  throws BlockStoreException, VerificationException {
+    private strictfp void KimotoGravityWell(StoredBlock storedPrev, Block nextBlock, long TargetBlocksSpacingSeconds, long PastBlocksMin, long PastBlocksMax)  throws BlockStoreException, VerificationException {
 	/* current difficulty formula, monacoin - kimoto gravity well */
         StoredBlock BlockLastSolved = storedPrev;
         StoredBlock BlockReading = storedPrev;
