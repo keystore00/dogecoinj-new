@@ -103,8 +103,10 @@ public class SPVBlockStore implements BlockStore {
                 log.info("Creating new SPV block chain file " + file);
                 randomAccessFile.setLength(fileSize);
             } else if (randomAccessFile.length() != fileSize) {
-                throw new BlockStoreException("File size on disk does not match expected size: " +
-                        randomAccessFile.length() + " vs " + fileSize);
+                log.info("Temporal workaround. Changeblock SPV chain file size" + file);
+                randomAccessFile.setLength(fileSize);
+                // throw new BlockStoreException("File size on disk does not match expected size: " +
+                //         randomAccessFile.length() + " vs " + fileSize);
             }
 
             FileChannel channel = randomAccessFile.getChannel();
