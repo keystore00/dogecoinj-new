@@ -139,6 +139,8 @@ public abstract class AbstractBlockChain {
     public static final long SwitchKGWBlock = 80000;
     public static final long KGWCheckDiffInterval = NetworkParameters.INTERVAL;
 
+    public static final long SwitchDigiShieldBlock = 140000;
+
     /**
      * Constructs a BlockChain connected to the given list of listeners (eg, wallets) and a store.
      */
@@ -881,25 +883,13 @@ public abstract class AbstractBlockChain {
     }
 
     private void checkDifficultyTransitions(StoredBlock storedPrev, Block nextBlock, Boolean isImportantBlock) throws BlockStoreException, VerificationException {
-
-        //long now = System.currentTimeMillis();
-
-
-        int DiffMode = 1;
-        if (params.getId().equals(NetworkParameters.ID_TESTNET)) {
-            if (storedPrev.getHeight()+1 >= 0) { DiffMode = 2; }
-        }
-        else {
-            if (storedPrev.getHeight()+1 >= SwitchKGWBlock) { DiffMode = 2; }
-        }
-
-        if (DiffMode == 1) { checkDifficultyTransitions_V1(storedPrev, nextBlock); }
-        else if	(DiffMode == 2) { checkDifficultyTransitions_V2(storedPrev, nextBlock, isImportantBlock); }
-
-        //checkDifficultyTransitions_V2(storedPrev, nextBlock);
-
-        //long elapsed = System.currentTimeMillis() - now;
-        //log.info("Monacoin checkDifficultyTransitions({}) is {} seconds", storedPrev.getHeight(), elapsed/1000);
+	if (storedPrev.getHeight()+1 >= 0 && storedPrev.getHeight()+1 < SwitchKGWBlock) {
+	    checkDifficultyTransitions_V1(storedPrev, nextBlock);
+	} else if (storedPrev.getHeight()+1 >= SwitchKGWBlock && storedPrev.getHeight()+1 < SwitchDigiShieldBlock) {
+	    checkDifficultyTransitions_V2(storedPrev, nextBlock, isImportantBlock);
+	} else if (storedPrev.getHeight()+1 >= SwitchDigiShieldBlock) {
+	    checkDifficultyTransitions_V3(storedPrev, nextBlock, isImportantBlock);
+	}
     }
 
     private void checkDifficultyTransitions_V2(StoredBlock storedPrev, Block nextBlock, Boolean isImportantBlock) throws BlockStoreException, VerificationException {
@@ -991,6 +981,47 @@ public abstract class AbstractBlockChain {
 
         verifyDifficulty(newDifficulty, nextBlock);
 
+    }
+
+    /**
+     * DigiShield
+     * Throws an exception if the blocks difficulty is not correct.
+     */
+    private void checkDifficultyTransitions_V3(StoredBlock storedPrev, Block nextBlock, Boolean isImportantBlock) throws BlockStoreException, VerificationException {
+	if (!isImportantBlock) {
+	    //skip checking difficulty transition
+	    return;
+	}
+        checkState(lock.isHeldByCurrentThread());
+        Block prev = storedPrev.getHeader();
+
+	//Go back to prevprev block
+        StoredBlock cursor = blockStore.get(prev.getHash());
+	cursor = blockStore.get(cursor.getHeader().getPrevBlockHash());
+
+        //We used checkpoints...
+        if(cursor == null)
+        {
+            log.debug("Difficulty transition: Hit checkpoint!");
+            return;
+        }
+
+        Block prevprev = cursor.getHeader();
+        int timespan = (int) (prev.getTimeSeconds() - prevprev.getTimeSeconds());
+
+	//DigiShield adjustment
+        final int retargetTimespan = params.getTargetTimespan();
+	timespan = retargetTimespan + (timespan - retargetTimespan)/8;
+	if (timespan < (retargetTimespan - (retargetTimespan/4)))
+	    timespan = (retargetTimespan - (retargetTimespan/4));
+	if (timespan > (retargetTimespan + (retargetTimespan/4)))
+	    timespan = (retargetTimespan + (retargetTimespan/2));
+
+        BigInteger newDifficulty = Utils.decodeCompactBits(prev.getDifficultyTarget());
+        newDifficulty = newDifficulty.multiply(BigInteger.valueOf(timespan));
+        newDifficulty = newDifficulty.divide(BigInteger.valueOf(retargetTimespan));
+
+	verifyDifficulty(newDifficulty, nextBlock);
     }
 
     private void verifyDifficulty(BigInteger calcDiff, Block nextBlock)
