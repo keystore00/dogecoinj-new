@@ -1014,7 +1014,7 @@ public abstract class AbstractBlockChain {
 	timespan = retargetTimespan + (timespan - retargetTimespan)/8;
 	if (timespan < (retargetTimespan - (retargetTimespan/4)))
 	    timespan = (retargetTimespan - (retargetTimespan/4));
-	if (timespan > (retargetTimespan + (retargetTimespan/4)))
+	if (timespan > (retargetTimespan + (retargetTimespan/2)))
 	    timespan = (retargetTimespan + (retargetTimespan/2));
 
         BigInteger newDifficulty = Utils.decodeCompactBits(prev.getDifficultyTarget());
