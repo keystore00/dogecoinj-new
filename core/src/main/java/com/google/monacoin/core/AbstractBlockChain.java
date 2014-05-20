@@ -136,10 +136,11 @@ public abstract class AbstractBlockChain {
     private double falsePositiveTrend;
     private double previousFalsePositiveRate;
 
-    public static final long SwitchKGWBlock = 80000;
-    public static final long KGWCheckDiffInterval = NetworkParameters.INTERVAL;
+    private static final long SwitchKGWBlock = 80000;
+    private static final long KGWCheckDiffInterval = NetworkParameters.INTERVAL;
 
-    public static final long SwitchDigiShieldBlock = 140000;
+    private static final long SwitchDigiShieldBlock = 140000;
+    private static final int digiShieldTimeSpan = 90;
 
     /**
      * Constructs a BlockChain connected to the given list of listeners (eg, wallets) and a store.
@@ -1010,7 +1011,7 @@ public abstract class AbstractBlockChain {
         int timespan = (int) (prev.getTimeSeconds() - prevprev.getTimeSeconds());
 
 	//DigiShield adjustment
-        final int retargetTimespan = params.getTargetTimespan();
+        final int retargetTimespan = digiShieldTimeSpan;
 	timespan = retargetTimespan + (timespan - retargetTimespan)/8;
 	if (timespan < (retargetTimespan - (retargetTimespan/4)))
 	    timespan = (retargetTimespan - (retargetTimespan/4));
