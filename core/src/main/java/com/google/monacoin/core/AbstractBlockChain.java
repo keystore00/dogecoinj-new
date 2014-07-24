@@ -398,7 +398,7 @@ public abstract class AbstractBlockChain {
                 return false;
             } else {
                 // It connects to somewhere on the chain. Not necessarily the top of the best known chain.
-                checkDifficultyTransitions(storedPrev, block, contentsImportant);
+                //checkDifficultyTransitions(storedPrev, block, contentsImportant);
                 connectBlock(block, storedPrev, shouldVerifyTransactions(), filteredTxHashList, filteredTxn);
             }
 
@@ -989,10 +989,6 @@ public abstract class AbstractBlockChain {
      * Throws an exception if the blocks difficulty is not correct.
      */
     private void checkDifficultyTransitions_V3(StoredBlock storedPrev, Block nextBlock, Boolean isImportantBlock) throws BlockStoreException, VerificationException {
-	if (!isImportantBlock) {
-	    //skip checking difficulty transition
-	    return;
-	}
         checkState(lock.isHeldByCurrentThread());
         Block prev = storedPrev.getHeader();
 
